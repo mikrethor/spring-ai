@@ -1,0 +1,7 @@
+= Spring AI
+
+This is a project to support my blog posts on Spring AI.
+
+== Blog Posts
+
+1. https://www.xavierbouclet.com/2024/03/04/spring-ai-integration.html[Integrate Open AI API to your Spring Boot application]
