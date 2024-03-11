@@ -3,6 +3,7 @@ package com.xavierbouclet.springai
 import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.prompt.Prompt
 import org.springframework.ai.image.ImagePrompt
+import org.springframework.ai.ollama.OllamaChatClient
 import org.springframework.ai.openai.OpenAiChatClient
 import org.springframework.ai.openai.OpenAiImageClient
 import org.springframework.beans.factory.annotation.Value
@@ -20,7 +21,9 @@ class RouterConfiguration {
     private lateinit var apiKey: String
 
     @Bean
-    fun aiRouter(chatClient: OpenAiChatClient, imageClient: OpenAiImageClient) = router {
+    fun aiRouter(chatClient: OpenAiChatClient,
+                 imageClient: OpenAiImageClient,
+                 ollamaChatClient: OllamaChatClient) = router {
         GET("/api/ai/generate") { request ->
             ServerResponse
                 .ok()
@@ -36,6 +39,33 @@ class RouterConfiguration {
             ServerResponse
                 .ok()
                 .body(chatClient.stream(
+                    Prompt(
+                        UserMessage(
+                            request
+                                .param("message")
+                                .orElse("Tell me a Chuck Norris fact")
+                        )
+                    )
+                ).mapNotNull { chatResp -> chatResp?.result?.output?.content }
+                    .toStream()
+                    .toList()
+                )
+        }
+        GET("/api/ollama/generate") { request ->
+            ServerResponse
+                .ok()
+                .body(
+                    ollamaChatClient.call(
+                        request
+                            .param("message")
+                            .orElse("Tell me a Chuck Norris fact")
+                    )
+                )
+        }
+        GET("/api/ollama/generateStream") { request ->
+            ServerResponse
+                .ok()
+                .body(ollamaChatClient.stream(
                     Prompt(
                         UserMessage(
                             request
